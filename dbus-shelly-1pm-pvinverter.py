@@ -105,7 +105,7 @@ class DbusShelly1pmService:
     accessType = config['DEFAULT']['AccessType']
 
     if accessType == 'OnPremise': 
-        URL = "http://%s:%s@%s/status" % (config['ONPREMISE']['Username'], config['ONPREMISE']['Password'], config['ONPREMISE']['Host'])
+        URL = "http://%s:%s@%s/rpc/PM1.GetStatus?id=0" % (config['ONPREMISE']['Username'], config['ONPREMISE']['Password'], config['ONPREMISE']['Host'])
         URL = URL.replace(":@", "")
     else:
         raise ValueError("AccessType %s is not supported" % (config['DEFAULT']['AccessType']))
@@ -153,7 +153,7 @@ class DbusShelly1pmService:
          pre = '/Ac/' + phase
 
          if phase == pvinverter_phase:
-           power = meter_data['meters'][0]['power']
+           power = meter_data['meters'][0]['apower']
            total = meter_data['meters'][0]['total']
            voltage = 230
            current = power / voltage
