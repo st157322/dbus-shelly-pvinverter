@@ -45,10 +45,10 @@ class DbusShelly1pmService:
     self._dbusservice.add_path('/Connected', 1)
 
     self._dbusservice.add_path('/Latency', None)
-    self._dbusservice.add_path('/FirmwareVersion', self._getShellyFWVersion())
+#    self._dbusservice.add_path('/FirmwareVersion', self._getShellyFWVersion())
     self._dbusservice.add_path('/HardwareVersion', 0)
     self._dbusservice.add_path('/Position', int(config['DEFAULT']['Position']))
-    self._dbusservice.add_path('/Serial', self._getShellySerial())
+#    self._dbusservice.add_path('/Serial', self._getShellySerial())
     self._dbusservice.add_path('/UpdateIndex', 0)
     self._dbusservice.add_path('/StatusCode', 0)  # Dummy path so VRM detects us as a PV-inverter.
 
@@ -75,14 +75,14 @@ class DbusShelly1pmService:
     serial = meter_data['mac']
     return serial
 
-  def _getShellyFWVersion(self):
-    meter_data = self._getShellyData()
+#  def _getShellyFWVersion(self):
+#    meter_data = self._getShellyData()
 
-    if not meter_data['update']['old_version']:
-        raise ValueError("Response does not contain 'update/old_version' attribute")
+#    if not meter_data['update']['old_version']:
+#        raise ValueError("Response does not contain 'update/old_version' attribute")
 
-    ver = meter_data['update']['old_version']
-    return ver
+#    ver = meter_data['update']['old_version']
+#    return ver
 
   def _getConfig(self):
     config = configparser.ConfigParser()
@@ -105,7 +105,7 @@ class DbusShelly1pmService:
     accessType = config['DEFAULT']['AccessType']
 
     if accessType == 'OnPremise': 
-        URL = "http://%s:%s@%s/rpc/PM1.GetStatus?id=0" % (config['ONPREMISE']['Username'], config['ONPREMISE']['Password'], config['ONPREMISE']['Host'])
+        URL = "http://%s:%s@%s/rpc/Shelly.GetStatus" % (config['ONPREMISE']['Username'], config['ONPREMISE']['Password'], config['ONPREMISE']['Host'])
         URL = URL.replace(":@", "")
     else:
         raise ValueError("AccessType %s is not supported" % (config['DEFAULT']['AccessType']))
@@ -153,16 +153,17 @@ class DbusShelly1pmService:
          pre = '/Ac/' + phase
 
          if phase == pvinverter_phase:
-           power = meter_data['meters'][0]['apower']
-           total = meter_data['meters'][0]['total']
-           voltage = 230
-           current = power / voltage
+           power = -meter_data['pm1:0']['apower']
+           total = meter_data['pm1:0']['aenergy']['total']
+           voltage = meter_data['pm1:0']['voltage']
+           current = meter_data['pm1:0']['current']
 
+             
            self._dbusservice[pre + '/Voltage'] = voltage
            self._dbusservice[pre + '/Current'] = current
            self._dbusservice[pre + '/Power'] = power
            if power > 0:
-             self._dbusservice[pre + '/Energy/Forward'] = total/1000/60 
+             self._dbusservice[pre + '/Energy/Forward'] = total/1000 
 
          else:
            self._dbusservice[pre + '/Voltage'] = 0
